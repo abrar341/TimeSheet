@@ -33,10 +33,10 @@ function StatusBadge({ status }: { status: TimesheetEntryType["status"] }) {
 
 function TimesheetMobileCard({
                                  row,
-                                 onAction,
+                                 onView,
                              }: {
     row: TimesheetEntryType
-    onAction: (id: string) => void
+    onView: (id: string) => void
 }) {
     const isCompleted = row.status === "COMPLETED"
     const label =
@@ -55,7 +55,7 @@ function TimesheetMobileCard({
                 variant="ghost"
                 btnType="button"
                 aria-label={`${label} timesheet for week ${row.week}`}
-                onClick={() => (onAction(row.id))}
+                onClick={() => (onView(row.id))}
                 className="h-8 px-3 text-[#1E5CE5] hover:bg-blue-50 hover:text-[#184BC0]"
             >
                 {label}
@@ -67,7 +67,7 @@ function TimesheetMobileCard({
 // ─── Column definitions ───────────────────────────────────────────────────────
 
 function useTimesheetColumns(
-    onAction: (id: string) => void,
+    onView: (id: string) => void,
 ): ColumnDef<TimesheetEntryType>[] {
     return React.useMemo(
         () => [
@@ -107,7 +107,7 @@ function useTimesheetColumns(
                                 variant="ghost"
                                 btnType="button"
                                 aria-label={`${label} timesheet for week ${week}`}
-                                onClick={() => (onAction(row.id))}
+                                onClick={() => (onView(row.original.id))}
                                 className="h-8 px-3 text-[#1E5CE5] hover:bg-blue-50 hover:text-[#184BC0]"
                             >
                                 {label}
@@ -117,7 +117,7 @@ function useTimesheetColumns(
                 },
             },
         ],
-        [onAction]
+        [onView]
     )
 }
 
@@ -170,7 +170,7 @@ export function TimesheetsTable({
                 <TimesheetMobileCard
                     key={row.id}
                     row={row.original}
-                    onAction={handleView}
+                    onView={handleView}
                 />
             )}
         />

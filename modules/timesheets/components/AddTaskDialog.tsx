@@ -178,7 +178,7 @@ export function AddTaskDialog({
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent
-        className="max-w-lg rounded-2xl p-0"
+        className="max-w-xl rounded-lg p-0"
         showClose
       >
         <DialogHeader className="border-b border-zinc-100 bg-white px-6 py-5">
