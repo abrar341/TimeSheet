@@ -8,7 +8,6 @@ import {
     type ColumnDef,
     type Row,
 } from "@tanstack/react-table"
-import { Select } from "@/components/common/Select"
 import {
     Table,
     TableBody,
@@ -18,6 +17,7 @@ import {
     TableRow,
 } from "@/components/ui/table"
 import { cn } from "@/lib/utils"
+import { SelectControl } from "../common/SelectControl"
 
 // ─── Page size options ────────────────────────────────────────────────────────
 
@@ -170,7 +170,7 @@ function Pagination({
             aria-label={paginationLabel}
             className="flex flex-col items-center justify-between gap-3 border-t border-zinc-100 px-2 py-3 sm:flex-row"
         >
-            <Select
+            <SelectControl
                 value={String(pageSize)}
                 onChange={(v) => {
                     onPageSizeChange(Number(v))

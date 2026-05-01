@@ -1,10 +1,10 @@
 "use client"
 
 import { useEffect } from "react"
-import { useForm, Controller } from "react-hook-form"
+import { useForm } from "react-hook-form"
 import { yupResolver } from "@hookform/resolvers/yup"
 import * as yup from "yup"
-import { Info, Minus, Plus } from "lucide-react"
+import { Minus, Plus } from "lucide-react"
 
 import {
   Dialog,
@@ -12,11 +12,15 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog"
-import { cn } from "@/lib/utils"
+import { SelectControl } from "@/components/common/SelectControl"
+import { TextareaControl } from "@/components/common/TextareaControl"
+import { InputControl } from "@/components/common/InputControl"
+import { Button } from "@/components/common/Button"
 import { PROJECT_OPTIONS, WORK_TYPE_OPTIONS } from "@/modules/timesheets/constants/timesheet.constants"
 import type { TimesheetTask, WorkType } from "@/modules/timesheets/types/timesheet-detail.type"
+import { addTaskSchema, type AddTaskFormValues } from "@/modules/timesheets/schemas/add-task.schema"
 
-// ─── Schema ──────────────────────────────────────────────────────────────────
+// ─── Schema ───────────────────────────────────────────────────────────────────
 const schema = yup.object({
   project: yup.string().required("Project is required"),
   typeOfWork: yup
@@ -39,73 +43,22 @@ type FormValues = {
   hours: number
 }
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-function FieldLabel({
-  children,
-  required,
+// ─── Stepper buttons (passed as prefix / postfix to InputControl) ─────────────
+function StepBtn({
+  icon,
+  onClick,
 }: {
-  children: React.ReactNode
-  required?: boolean
+  icon: React.ReactNode
+  onClick: () => void
 }) {
   return (
-    <div className="mb-1.5 flex items-center gap-1.5">
-      <label className="text-sm font-medium text-zinc-800">
-        {children}
-        {required ? <span className="ml-0.5 text-zinc-800"> *</span> : null}
-      </label>
-      <Info className="size-3.5 text-zinc-400" />
-    </div>
-  )
-}
-
-function FieldError({ msg }: { msg?: string }) {
-  return msg ? <p className="mt-1 text-xs text-red-500">{msg}</p> : null
-}
-
-function SelectField({
-  value,
-  onChange,
-  options,
-  placeholder,
-  hasError,
-}: {
-  value: string
-  onChange: (v: string) => void
-  options: readonly string[]
-  placeholder: string
-  hasError?: boolean
-}) {
-  return (
-    <div className="relative">
-      <select
-        value={value}
-        onChange={(e) => onChange(e.target.value)}
-        className={cn(
-          "w-full appearance-none rounded-lg border bg-white px-4 py-3 pr-10 text-sm focus:outline-none focus:ring-2 focus:ring-[#1E5CE5]/30",
-          hasError ? "border-red-400" : "border-zinc-200",
-          !value ? "text-zinc-400" : "text-zinc-800"
-        )}
-      >
-        <option value="" disabled>
-          {placeholder}
-        </option>
-        {options.map((o) => (
-          <option key={o} value={o}>
-            {o}
-          </option>
-        ))}
-      </select>
-      {/* chevron */}
-      <svg
-        className="pointer-events-none absolute right-3 top-1/2 size-4 -translate-y-1/2 text-zinc-400"
-        fill="none"
-        viewBox="0 0 24 24"
-        stroke="currentColor"
-        strokeWidth={2}
-      >
-        <path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" />
-      </svg>
-    </div>
+    <button
+      type="button"
+      onClick={onClick}
+      className="flex size-8 items-center justify-center rounded text-zinc-600 hover:bg-zinc-100 active:bg-zinc-200"
+    >
+      {icon}
+    </button>
   )
 }
 
@@ -113,7 +66,6 @@ function SelectField({
 type AddTaskDialogProps = {
   open: boolean
   onOpenChange: (o: boolean) => void
-  /** If provided, the dialog switches to edit mode */
   task?: TimesheetTask | null
   isPending?: boolean
   onSubmit: (values: Omit<TimesheetTask, "id">) => Promise<void>
@@ -131,23 +83,16 @@ export function AddTaskDialog({
 
   const {
     control,
-    register,
     handleSubmit,
     reset,
     setValue,
     watch,
     formState: { errors },
-  } = useForm<FormValues>({
-    resolver: yupResolver(schema) as any,
-    defaultValues: {
-      project: "",
-      typeOfWork: "",
-      description: "",
-      hours: 1,
-    },
+  } = useForm<AddTaskFormValues>({
+    resolver: yupResolver(addTaskSchema) as any,
+    defaultValues: { project: "", typeOfWork: "", description: "", hours: 1 },
   })
 
-  // Populate when editing
   useEffect(() => {
     if (open) {
       if (task) {
@@ -165,7 +110,7 @@ export function AddTaskDialog({
 
   const hoursValue = watch("hours") ?? 1
 
-  const submitHandler = handleSubmit(async (values) => {
+  const submitHandler = handleSubmit(async (values: AddTaskFormValues) => {
     await onSubmit({
       project: values.project,
       typeOfWork: values.typeOfWork as WorkType,
@@ -177,10 +122,7 @@ export function AddTaskDialog({
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent
-        className="max-w-xl rounded-lg p-0"
-        showClose
-      >
+      <DialogContent className="max-w-lg rounded-lg p-0" showClose>
         <DialogHeader className="border-b border-zinc-100 bg-white px-6 py-5">
           <DialogTitle className="text-lg font-semibold text-zinc-900">
             {isEdit ? "Edit Entry" : "Add New Entry"}
@@ -188,109 +130,79 @@ export function AddTaskDialog({
         </DialogHeader>
 
         <form onSubmit={submitHandler} className="flex flex-col gap-5 px-6 py-6">
+
           {/* Select Project */}
-          <div>
-            <FieldLabel required>Select Project</FieldLabel>
-            <Controller
-              control={control}
-              name="project"
-              render={({ field }) => (
-                <SelectField
-                  value={field.value}
-                  onChange={field.onChange}
-                  options={PROJECT_OPTIONS}
-                  placeholder="Project Name"
-                  hasError={Boolean(errors.project)}
-                />
-              )}
-            />
-            <FieldError msg={errors.project?.message} />
-          </div>
+          <SelectControl
+            control={control}
+            name="project"
+            label="Select Project"
+            required
+            placeholder="Project Name"
+            options={PROJECT_OPTIONS}
+          />
 
           {/* Type of Work */}
-          <div>
-            <FieldLabel required>Type of Work</FieldLabel>
-            <Controller
-              control={control}
-              name="typeOfWork"
-              render={({ field }) => (
-                <SelectField
-                  value={field.value}
-                  onChange={field.onChange}
-                  options={WORK_TYPE_OPTIONS}
-                  placeholder="Select type"
-                  hasError={Boolean(errors.typeOfWork)}
-                />
-              )}
-            />
-            <FieldError msg={errors.typeOfWork?.message} />
-          </div>
+          <SelectControl
+            control={control}
+            name="typeOfWork"
+            label="Type of Work"
+            required
+            placeholder="Select type"
+            options={WORK_TYPE_OPTIONS}
+          />
 
           {/* Task description */}
-          <div>
-            <FieldLabel required>Task description</FieldLabel>
-            <textarea
-              {...register("description")}
-              rows={5}
-              placeholder="Write text here ..."
-              className={cn(
-                "w-full resize-none rounded-lg border px-4 py-3 text-sm text-zinc-800 placeholder:text-zinc-400 focus:outline-none focus:ring-2 focus:ring-[#1E5CE5]/30",
-                errors.description ? "border-red-400" : "border-zinc-200"
-              )}
-            />
-            <p className="mt-1 text-xs text-zinc-400">A note for extra info</p>
-            <FieldError msg={errors.description?.message} />
-          </div>
+          <TextareaControl
+            control={control}
+            name="description"
+            label="Task description"
+            required
+            rows={5}
+            placeholder="Write text here ..."
+            hint="A note for extra info"
+          />
 
-          {/* Hours stepper */}
-          <div>
-            <FieldLabel required>Hours</FieldLabel>
-            <div className="flex items-center gap-0">
-              <button
-                type="button"
+          {/* Hours stepper — InputControl with prefix/postfix buttons */}
+          <InputControl
+            control={control}
+            name="hours"
+            label="Hours"
+            required
+            type="number"
+            placeholder="0"
+            prefixButton={
+              <StepBtn
+                icon={<Minus className="size-4" />}
                 onClick={() => setValue("hours", Math.max(0.5, hoursValue - 0.5))}
-                className="flex size-10 items-center justify-center rounded-l-lg border border-r-0 border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 active:bg-zinc-100"
-              >
-                <Minus className="size-4" />
-              </button>
-              <input
-                type="number"
-                step={0.5}
-                min={0.5}
-                max={24}
-                {...register("hours", { valueAsNumber: true })}
-                className={cn(
-                  "h-10 w-16 border border-zinc-200 bg-white text-center text-sm font-medium text-zinc-800 focus:outline-none focus:ring-2 focus:ring-inset focus:ring-[#1E5CE5]/30",
-                  errors.hours ? "border-red-400" : ""
-                )}
               />
-              <button
-                type="button"
+            }
+            postfixButton={
+              <StepBtn
+                icon={<Plus className="size-4" />}
                 onClick={() => setValue("hours", Math.min(24, hoursValue + 0.5))}
-                className="flex size-10 items-center justify-center rounded-r-lg border border-l-0 border-zinc-200 bg-white text-zinc-600 hover:bg-zinc-50 active:bg-zinc-100"
-              >
-                <Plus className="size-4" />
-              </button>
-            </div>
-            <FieldError msg={errors.hours?.message} />
-          </div>
+              />
+            }
+            className="w-36"
+          />
 
           {/* Footer buttons */}
           <div className="flex gap-3 border-t border-zinc-100 pt-4">
-            <button
-              type="submit"
-              disabled={isPending}
-              className="flex h-11 flex-1 items-center justify-center rounded-lg bg-[#1E5CE5] text-sm font-semibold text-white transition-colors hover:bg-[#184BC0] disabled:opacity-60"
+            <Button
+              btnType="submit"
+              variant="primary"
+              isLoading={isPending}
+              className="h-11 flex-1"
             >
-              {isPending ? "Saving…" : isEdit ? "Save changes" : "Add entry"}
-            </button>
-            <button
-              type="button"
+              {isEdit ? "Save changes" : "Add entry"}
+            </Button>
+            <Button
+              btnType="button"
+              variant="outline-light"
               onClick={() => onOpenChange(false)}
-              className="flex h-11 flex-1 items-center justify-center rounded-lg border border-zinc-200 text-sm font-medium text-zinc-700 hover:bg-zinc-50"
+              className="h-11 flex-1"
             >
               Cancel
-            </button>
+            </Button>
           </div>
         </form>
       </DialogContent>

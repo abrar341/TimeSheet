@@ -8,10 +8,10 @@ import { CardHeader } from "@/components/app-cards/card/CardHeader";
 import { CopyrightFooterCard } from "@/components/app-cards/copyright-footer-card/CopyrightFooterCard";
 import { Row } from "@/components/grid/Row";
 import { Col } from "@/components/grid/Col";
-import { Select } from "@/components/common/Select";
 import { TimesheetsTable } from "@/modules/timesheets/components/TimesheetsTable";
-import type { timesheetEntryType, TimesheetStatus } from "@/modules/timesheets/types/timesheet.type";
+import type { TimesheetStatus } from "@/modules/timesheets/types/timesheet.type";
 import { useTimesheetList } from "@/modules/timesheets/hooks/useTimesheetList";
+import { SelectControl } from "@/components/common/SelectControl";
 
 const STATUS_OPTIONS: { label: string; value: TimesheetStatus | "" }[] = [
   { label: "All statuses", value: "" },
@@ -41,10 +41,10 @@ export default function TimesheetsPage() {
     isFetching,
   } = useTimesheetList(filters);
 
-  function handleStatusChange(value: TimesheetStatus | "") {
-    setStatusFilter(value);
-    setPageIndex(0);
-  }
+  function handleStatusChange(value: string) {
+  setStatusFilter(value as TimesheetStatus | "")
+  setPageIndex(0)
+}
 
   function handlePageChange(index: number) {
     setPageIndex(index);
@@ -65,7 +65,7 @@ export default function TimesheetsPage() {
               className="flex-col items-start gap-3"
             >
               <div className="flex items-center gap-2">
-                <Select
+                <SelectControl
                   value={statusFilter}
                   onChange={handleStatusChange}
                   options={STATUS_OPTIONS}
