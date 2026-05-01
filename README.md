@@ -66,9 +66,6 @@ The home page `/` redirects to `/login`.
 |--------|-------------|
 | `npm run dev` | Start Next.js in development (Turbopack). |
 | `npm run build` | Create an optimized production build. |
-| `npm start` | Run the production server (after `build`). |
-| `npm run lint` | Run ESLint. |
-| `npm test` | Run **Vitest** (unit / component tests — small suite). |
 
 ---
 
@@ -167,4 +164,4 @@ npm test
 
 ## Time spent
 
-Not tracked in this repository. If you need a figure for coursework or a stakeholder, estimate from your own session log or sprint notes.
+Not tracked.
