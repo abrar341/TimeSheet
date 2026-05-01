@@ -1,0 +1,39 @@
+<svg width="900" height="520" viewBox="0 0 900 520" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="520" gradientUnits="userSpaceOnUse">
+      <stop stop-color="#E0F2FE" stop-opacity="0.25"/>
+      <stop offset="1" stop-color="#FFFFFF" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="shadow" x="-50" y="-50" width="1000" height="700" color-interpolation-filters="sRGB">
+      <feDropShadow dx="0" dy="24" stdDeviation="18" flood-color="#0C4A6E" flood-opacity="0.25"/>
+    </filter>
+  </defs>
+
+  <rect width="900" height="520" fill="url(#g)"/>
+
+  <!-- Card -->
+  <g filter="url(#shadow)">
+    <rect x="180" y="120" width="540" height="320" rx="22" fill="white" fill-opacity="0.95"/>
+    <rect x="180" y="120" width="540" height="320" rx="22" stroke="#BAE6FD" stroke-width="2"/>
+
+    <!-- Header -->
+    <rect x="220" y="165" width="170" height="16" rx="8" fill="#0EA5E9" fill-opacity="0.25"/>
+    <rect x="220" y="195" width="240" height="10" rx="5" fill="#0EA5E9" fill-opacity="0.18"/>
+
+    <!-- Rows -->
+    <rect x="220" y="245" width="420" height="12" rx="6" fill="#0EA5E9" fill-opacity="0.15"/>
+    <rect x="220" y="275" width="380" height="12" rx="6" fill="#0EA5E9" fill-opacity="0.15"/>
+    <rect x="220" y="305" width="400" height="12" rx="6" fill="#0EA5E9" fill-opacity="0.15"/>
+    <rect x="220" y="335" width="300" height="12" rx="6" fill="#0EA5E9" fill-opacity="0.15"/>
+
+    <!-- Button -->
+    <rect x="220" y="375" width="180" height="40" rx="12" fill="#0EA5E9"/>
+    <rect x="240" y="389" width="86" height="12" rx="6" fill="white" fill-opacity="0.9"/>
+  </g>
+
+  <!-- Decorative blobs -->
+  <circle cx="110" cy="430" r="92" fill="#38BDF8" fill-opacity="0.25"/>
+  <circle cx="760" cy="70" r="60" fill="#7DD3FC" fill-opacity="0.22"/>
+  <circle cx="820" cy="420" r="110" fill="#0EA5E9" fill-opacity="0.14"/>
+</svg>
+
