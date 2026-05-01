@@ -80,12 +80,12 @@ function PageButton({
 
 function SkeletonCard() {
     return (
-        <div className="space-y-2 rounded-lg border border-zinc-100 bg-white p-4">
-            <div className="h-3.5 w-1/3 animate-pulse rounded bg-zinc-100" />
-            <div className="h-3 w-1/2 animate-pulse rounded bg-zinc-100" />
-            <div className="h-3 w-2/3 animate-pulse rounded bg-zinc-100" />
+        <div className="space-y-2 rounded-lg border border-zinc-200 bg-white p-4">
+            <div className="h-3.5 w-1/3 animate-pulse rounded bg-zinc-200" />
+            <div className="h-3 w-1/2 animate-pulse rounded bg-zinc-200" />
+            <div className="h-3 w-2/3 animate-pulse rounded bg-zinc-200" />
             <div className="flex justify-end pt-1">
-                <div className="h-7 w-16 animate-pulse rounded bg-zinc-100" />
+                <div className="h-7 w-16 animate-pulse rounded bg-zinc-200" />
             </div>
         </div>
     )
@@ -96,7 +96,7 @@ function SkeletonRow({ cols }: { cols: number }) {
         <TableRow className="border-b border-zinc-100">
             {Array.from({ length: cols }).map((_, i) => (
                 <TableCell key={i}>
-                    <div className="h-4 w-3/4 animate-pulse rounded bg-zinc-100" />
+                    <div className="h-4 w-3/4 animate-pulse rounded bg-zinc-200" />
                 </TableCell>
             ))}
         </TableRow>

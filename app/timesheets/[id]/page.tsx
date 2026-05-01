@@ -2,7 +2,7 @@
 
 import { useState } from "react"
 import { useParams, useRouter } from "next/navigation"
-import { ArrowLeft, MoreHorizontal } from "lucide-react"
+import { ArrowLeft, MoreHorizontal, Loader2 } from "lucide-react"
 
 import { Card } from "@/components/app-cards/card/Card"
 import { CardBody } from "@/components/app-cards/card/CardBody"
@@ -19,6 +19,7 @@ import { AddTaskDialog } from "@/modules/timesheets/components/AddTaskDialog"
 import type { TimesheetTask, TimesheetDay } from "@/modules/timesheets/types/timesheet-detail.type"
 
 // ─── Task row ─────────────────────────────────────────────────────────────────
+
 function TaskRow({
   task,
   onEdit,
@@ -33,17 +34,11 @@ function TaskRow({
   return (
     <Row gap={3} className="items-center rounded-lg border border-zinc-200 bg-white px-4 py-3">
 
-      {/* Description — 10/12 on mobile (line 1 left), flex-1 on lg */}
-      <Col xs={10} lg={6}
-        className="order-1 lg:order-1 lg:flex-1 min-w-0 text-sm text-zinc-800 truncate"
-      >
+      <Col xs={10} lg={6} className="order-1 lg:order-1 lg:flex-1 min-w-0 text-sm text-zinc-800 truncate">
         {task.description}
       </Col>
 
-      {/* Menu — 2/12 on mobile (line 1 right), last on lg */}
-      <Col xs={2} lg={2}
-        className="order-2 lg:order-4 flex justify-end"
-      >
+      <Col xs={2} lg={2} className="order-2 lg:order-4 flex justify-end">
         <div className="relative">
           <button
             type="button"
@@ -53,9 +48,14 @@ function TaskRow({
             <MoreHorizontal className="size-4" />
           </button>
 
-          {menuOpen ? (
+          {menuOpen && (
             <>
-              <div className="fixed inset-0 z-10" onClick={() => setMenuOpen(false)} />
+              <button
+                type="button"
+                aria-label="Close menu"
+                onClick={() => setMenuOpen(false)}
+                className="fixed inset-0 z-10 cursor-default"
+              />
               <div className="absolute right-0 top-full z-20 mt-1 w-28 overflow-hidden rounded-lg border border-zinc-200 bg-white shadow-md">
                 <button
                   type="button"
@@ -73,21 +73,15 @@ function TaskRow({
                 </button>
               </div>
             </>
-          ) : null}
+          )}
         </div>
       </Col>
 
-      {/* Hours — auto on mobile (line 2), second on lg */}
-      <Col xs="auto" lg={2}
-        className="order-3 lg:order-2 text-sm text-zinc-500 whitespace-nowrap"
-      >
+      <Col xs="auto" lg={2} className="order-3 lg:order-2 text-sm text-zinc-500 whitespace-nowrap">
         {task.hours} hrs
       </Col>
 
-      {/* Badge — auto on mobile (line 2), third on lg */}
-      <Col xs="auto" lg={2}
-        className="order-4 lg:order-3"
-      >
+      <Col xs="auto" lg={2} className="order-4 lg:order-3">
         <span className="rounded-md bg-blue-50 px-2.5 py-1 text-xs font-medium text-blue-700 ring-1 ring-blue-100 whitespace-nowrap">
           {task.project}
         </span>
@@ -98,6 +92,7 @@ function TaskRow({
 }
 
 // ─── Day group ────────────────────────────────────────────────────────────────
+
 function DayGroup({
   day,
   onAddTask,
@@ -137,9 +132,15 @@ function DayGroup({
 }
 
 // ─── Hours progress ───────────────────────────────────────────────────────────
+
+function getBarColor(pct: number) {
+  if (pct >= 100) return "bg-emerald-500"
+  if (pct >= 60)  return "bg-amber-400"
+  return "bg-red-500"
+}
+
 function HoursProgress({ total, target }: { total: number; target: number }) {
   const pct = target > 0 ? Math.min(100, Math.round((total / target) * 100)) : 0
-  const barColor = pct >= 100 ? "bg-emerald-500" : pct >= 60 ? "bg-amber-400" : "bg-red-500"
 
   return (
     <div className="flex items-center gap-3">
@@ -149,7 +150,7 @@ function HoursProgress({ total, target }: { total: number; target: number }) {
         </span>
         <div className="h-2 w-32 overflow-hidden rounded-full bg-zinc-100">
           <div
-            className={cn("h-full rounded-full transition-all", barColor)}
+            className={cn("h-full rounded-full transition-all", getBarColor(pct))}
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -160,6 +161,7 @@ function HoursProgress({ total, target }: { total: number; target: number }) {
 }
 
 // ─── Page ─────────────────────────────────────────────────────────────────────
+
 export default function TimesheetDetailPage() {
   const params = useParams<{ id: string }>()
   const router = useRouter()
@@ -169,26 +171,20 @@ export default function TimesheetDetailPage() {
   const { mutateAsync: updateTask, isPending: isUpdating } = useUpdateTask(params.id)
   const { mutateAsync: deleteTask, isPending: isDeleting } = useDeleteTask(params.id)
 
+  // Note: disables all interactions during any mutation to avoid race conditions
   const isMutating = isAdding || isUpdating || isDeleting
 
-  const [dialogOpen, setDialogOpen] = useState(false)
-  const [activeDate, setActiveDate] = useState<string | null>(null)
+  const [dialogOpen, setDialogOpen]   = useState(false)
+  const [activeDate, setActiveDate]   = useState<string | null>(null)
   const [editingTask, setEditingTask] = useState<TimesheetTask | null>(null)
 
-  function openAdd(date: string) {
-    setEditingTask(null)
-    setActiveDate(date)
-    setDialogOpen(true)
-  }
-
-  function openEdit(task: TimesheetTask) {
-    setEditingTask(task)
-    setActiveDate(null)
+  function openDialog(options: { task?: TimesheetTask; date?: string }) {
+    setEditingTask(options.task ?? null)
+    setActiveDate(options.date ?? null)
     setDialogOpen(true)
   }
 
   async function handleDelete(taskId: string) {
-    if (!confirm("Delete this task?")) return
     await deleteTask(taskId)
   }
 
@@ -197,6 +193,8 @@ export default function TimesheetDetailPage() {
       await updateTask({ taskId: editingTask.id, ...values })
     } else if (activeDate) {
       await addTask({ date: activeDate, ...values })
+    } else {
+      return
     }
     setDialogOpen(false)
   }
@@ -207,9 +205,13 @@ export default function TimesheetDetailPage() {
         <Row gap={6}>
           <Col xs={12}>
             <Card>
-              <CardBody isLoading={isLoading}>
-                {isError ? (
-                  <div className="flex flex-col items-center gap-3 py-12 text-center">
+              <CardBody>
+                {isLoading ? (
+                  <div className="flex min-h-[400px] items-center justify-center">
+                    <Loader2 className="size-8 animate-spin text-zinc-400" />
+                  </div>
+                ) : isError ? (
+                  <div className="flex min-h-[400px] flex-col items-center justify-center gap-3">
                     <p className="text-sm text-red-600">
                       {error?.message ?? "Failed to load timesheet"}
                     </p>
@@ -223,7 +225,8 @@ export default function TimesheetDetailPage() {
                   </div>
                 ) : data ? (
                   <div className="flex flex-col gap-6">
-                    {/* Header: title + progress */}
+
+                    {/* Header */}
                     <Row gap={4} className="border-b border-zinc-100 pb-5">
                       <Col xs={12} sm={7} lg={8} className="flex flex-col gap-1">
                         <div className="flex items-center gap-2">
@@ -251,12 +254,13 @@ export default function TimesheetDetailPage() {
                         <DayGroup
                           key={day.date}
                           day={day}
-                          onAddTask={openAdd}
-                          onEditTask={openEdit}
+                          onAddTask={(date) => openDialog({ date })}
+                          onEditTask={(task) => openDialog({ task })}
                           onDeleteTask={handleDelete}
                         />
                       ))}
                     </div>
+
                   </div>
                 ) : null}
               </CardBody>

@@ -103,6 +103,7 @@ export default function TimesheetsPage() {
                     totalPages={meta.totalPages}
                     onPageChange={handlePageChange}
                     onPageSizeChange={handlePageSizeChange}
+                    isLoading={isLoading || isFetching}
                   />
                 </>
               )}
