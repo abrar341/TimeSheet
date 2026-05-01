@@ -95,9 +95,6 @@ export default function TimesheetsPage() {
                   ) : null}
                   <TimesheetsTable
                     data={timesheets}
-                    onAction={(row: timesheetEntryType) => {
-                      console.log("action", row);
-                    }}
                     pageIndex={pageIndex}
                     pageSize={pageSize}
                     totalPages={meta.totalPages}

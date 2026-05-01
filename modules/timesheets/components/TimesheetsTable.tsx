@@ -34,11 +34,9 @@ function StatusBadge({ status }: { status: TimesheetEntryType["status"] }) {
 function TimesheetMobileCard({
                                  row,
                                  onAction,
-                                 onView,
                              }: {
     row: TimesheetEntryType
-    onAction: (row: TimesheetEntryType) => void
-    onView: (id: string) => void
+    onAction: (id: string) => void
 }) {
     const isCompleted = row.status === "COMPLETED"
     const label =
@@ -57,7 +55,7 @@ function TimesheetMobileCard({
                 variant="ghost"
                 btnType="button"
                 aria-label={`${label} timesheet for week ${row.week}`}
-                onClick={() => (isCompleted ? onView(row.id) : onAction(row))}
+                onClick={() => (onAction(row.id))}
                 className="h-8 px-3 text-[#1E5CE5] hover:bg-blue-50 hover:text-[#184BC0]"
             >
                 {label}
@@ -69,8 +67,7 @@ function TimesheetMobileCard({
 // ─── Column definitions ───────────────────────────────────────────────────────
 
 function useTimesheetColumns(
-    onAction: (row: TimesheetEntryType) => void,
-    onView: (id: string) => void,
+    onAction: (id: string) => void,
 ): ColumnDef<TimesheetEntryType>[] {
     return React.useMemo(
         () => [
@@ -110,9 +107,7 @@ function useTimesheetColumns(
                                 variant="ghost"
                                 btnType="button"
                                 aria-label={`${label} timesheet for week ${week}`}
-                                onClick={() =>
-                                    isCompleted ? onView(id) : onAction(row.original)
-                                }
+                                onClick={() => (onAction(row.id))}
                                 className="h-8 px-3 text-[#1E5CE5] hover:bg-blue-50 hover:text-[#184BC0]"
                             >
                                 {label}
@@ -122,7 +117,7 @@ function useTimesheetColumns(
                 },
             },
         ],
-        [onAction, onView]
+        [onAction]
     )
 }
 
@@ -130,7 +125,6 @@ function useTimesheetColumns(
 
 type Props = {
     data: TimesheetEntryType[]
-    onAction: (row: TimesheetEntryType) => void
     pageIndex: number
     pageSize: number
     totalPages: number
@@ -143,7 +137,6 @@ type Props = {
 
 export function TimesheetsTable({
                                     data,
-                                    onAction,
                                     pageIndex,
                                     pageSize,
                                     totalPages,
@@ -158,7 +151,7 @@ export function TimesheetsTable({
         [router]
     )
 
-    const columns = useTimesheetColumns(onAction, handleView)
+    const columns = useTimesheetColumns(handleView)
 
     return (
         <DataTable
@@ -177,8 +170,7 @@ export function TimesheetsTable({
                 <TimesheetMobileCard
                     key={row.id}
                     row={row.original}
-                    onAction={onAction}
-                    onView={handleView}
+                    onAction={handleView}
                 />
             )}
         />
