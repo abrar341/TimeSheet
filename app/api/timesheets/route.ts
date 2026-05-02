@@ -1,64 +1,33 @@
-import { createTimesheet, listTimesheets } from "@/lib/data/timesheets"
-import type { TimesheetStatus } from "@/modules/timesheets/types/timesheet.type"
+import { listTimesheets, createTimesheet } from "@/lib/data/timesheets"
 
 export async function GET(req: Request) {
   const { searchParams } = new URL(req.url)
+  const page = parseInt(searchParams.get("page") ?? "1")
+  const pageSize = parseInt(searchParams.get("pageSize") ?? "10")
 
-  const status = searchParams.get("status") as TimesheetStatus | null
-  const page = Math.max(1, parseInt(searchParams.get("page") ?? "1", 10) || 1)
-  const pageSize = Math.min(
-    100,
-    Math.max(1, parseInt(searchParams.get("pageSize") ?? "5", 10) || 5)
-  )
-
-  let rows = listTimesheets()
-
-  // Filter by status
-  if (status === "COMPLETED" || status === "INCOMPLETE" || status === "MISSING") {
-    rows = rows.filter((r) => r.status === status)
-  }
-
-  const total = rows.length
-  const totalPages = Math.max(1, Math.ceil(total / pageSize))
-  const safePage = Math.min(page, totalPages)
-  const start = (safePage - 1) * pageSize
-  const data = rows.slice(start, start + pageSize)
+  const all = listTimesheets()
+  const total = all.length
+  const totalPages = Math.ceil(total / pageSize)
+  const data = all.slice((page - 1) * pageSize, page * pageSize)
 
   return Response.json({
     data,
     meta: {
-      total,
-      page: safePage,
+      page,
       pageSize,
+      total,
       totalPages,
     },
   })
 }
 
 export async function POST(req: Request) {
-  const body = (await req.json().catch(() => null)) as null | {
-    week?: number
-    dateRange?: string
-    status?: TimesheetStatus
-  }
-
+  const body = await req.json().catch(() => null)
   if (!body) return Response.json({ message: "Invalid JSON body" }, { status: 400 })
-
-  if (
-    typeof body.week !== "number" ||
-    typeof body.dateRange !== "string" ||
-    (body.status !== "COMPLETED" &&
-      body.status !== "INCOMPLETE" &&
-      body.status !== "MISSING")
-  ) {
-    return Response.json({ message: "Invalid payload" }, { status: 422 })
-  }
 
   const created = createTimesheet({
     week: body.week,
     dateRange: body.dateRange,
-    status: body.status,
   })
-
   return Response.json({ data: created }, { status: 201 })
 }
